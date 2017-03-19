@@ -4,9 +4,6 @@ from nltk.corpus import stopwords
 from collections import Counter
 from nltk.corpus import wordnet as wn
 import lev
-"""print wn.lch_similarity(wn.synsets('hit')[0], wn.synsets('dog')[0])
-print wn.path_similarity(wn.synsets('hit')[0], wn.synsets('dog')[0])
-print wn.wup_similarity(wn.synsets('hit')[0], wn.synsets('dog')[0])"""
 stopwords = stopwords.words('english')
 
 def vectorizer(q1,q2,tmp_dict={}):
@@ -129,6 +126,9 @@ def norm(tf_d,t):
 	return 1/np.sqrt(tf_d[t])
 
 def score(q,d):
+	"""custom score (from search engine)
+		
+	"""
 	tf_q = tf(q)
 	tf_d = tf(d)
 	df_ = df(tf_q,tf_d)
@@ -157,10 +157,11 @@ def percentage(data_list):
 	total = sum(tmp.values())
 	return {word: tmp[word] / total for word in tmp}
 
+"""Some test
 t_1 = ['d','r','i']
 t_2 = ['d','r','t']
 print Counter(t_1)
-"""tf_1 = tf(t_1)
+tf_1 = tf(t_1)
 df_  = df(tf(t_1),tf(t_2))
 print queryNorm(tf_1,df_)
 print idf('d', df(tf(t_1),tf(t_2)))

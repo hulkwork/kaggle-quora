@@ -1,11 +1,18 @@
 from sklearn.ensemble import RandomForestClassifier,RandomForestRegressor
 from nltk import word_tokenize
 import pandas as pd
+import sys
+import utils
+
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 train = pd.read_csv("train_distance.csv")
 
+# Use random forest regressor
 rfr = RandomForestRegressor(n_estimators=30,verbose=0, max_depth=None, min_samples_split=2, min_samples_leaf=1, max_features='auto', bootstrap=True, n_jobs=1)
 
+# version of sklearn use 0.14
 y = list(train['target'])
 X = train.drop(['target'],axis=1)
 X = X.fillna(-1)
@@ -19,21 +26,11 @@ y_test = y[int(n*size)+1:]
 rfr.fit(X_train,y_train)
 
 mse = 0.0
+# Not the target metric (it's log-loss)
 for i,val in enumerate(rfr.predict(X_test)):
-	#if y_test[i] == val:
 	mse += (val-y_test[i])**2
 
 print "current prediction rate %s" % (str(float(mse)/(i+1)),)
-import pandas as pd
-import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
-import lev
-from nltk import word_tokenize
-import nltk
-from nltk.corpus import stopwords
-stopwords = stopwords.words('english')
-import utils
 
 test = pd.read_csv('test.csv')
 
@@ -46,6 +43,7 @@ prediction = []
 counter = 0
 sub = open('sub.csv','wb')
 sub.write('test_id,is_duplicate\n')
+# prediction by item to avoid out of memory
 for item in test.iterrows():
 	counter += 1
 	if True:

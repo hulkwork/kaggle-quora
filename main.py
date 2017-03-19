@@ -9,15 +9,14 @@ from nltk.corpus import stopwords
 from nltk.corpus import wordnet as wn
 import utils
 import datetime
-porter = nltk.PorterStemmer()
-lancaster = nltk.LancasterStemmer()
-wnl = nltk.WordNetLemmatizer()
-stopwords = stopwords.words('english')
-train = pd.read_csv('train.csv',encoding='utf-8')
 
+# Load train
+train = pd.read_csv('train.csv',encoding='utf-8')
+# define new train data
 data_train = []
-error = []
+
 t_init = datetime.datetime.now()
+
 batch = 1000
 size_train = len(train)
 t_mean = t_init-t_init
@@ -46,6 +45,7 @@ for item in train.iterrows():
 		t_init = datetime.datetime.now()
 
 d = pd.DataFrame(data_train)
+# save for future prediction
 d.to_csv('train_distance.csv',index=False)
 
 import update
