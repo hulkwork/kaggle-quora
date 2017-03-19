@@ -1,5 +1,6 @@
 # kaggle-quora
-From my own learning
+From my own learning of ML
+
 ## Approach
 -	How can we define a similarity between two sentences ? Let's check gensim !
 -	Why RandomForestRegressor ? Because it's simple to use 
