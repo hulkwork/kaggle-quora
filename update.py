@@ -10,12 +10,14 @@ sys.setdefaultencoding("utf-8")
 train = pd.read_csv("train_distance.csv")
 
 # Use random forest regressor
-rfr = RandomForestRegressor(n_estimators=30,verbose=0, max_depth=None, min_samples_split=2, min_samples_leaf=1, max_features='auto', bootstrap=True, n_jobs=1)
 
 # version of sklearn use 0.14
 y = list(train['target'])
 X = train.drop(['target'],axis=1)
 X = X.fillna(-1)
+
+"""rfr = RandomForestRegressor(n_estimators=500,verbose=1, max_depth=None, min_samples_split=2, min_samples_leaf=1, max_features='auto', bootstrap=True, n_jobs=-1)
+
 n=0.7
 size = len(X)
 X_train = X[:int(n*size)] 
@@ -30,7 +32,28 @@ mse = 0.0
 for i,val in enumerate(rfr.predict(X_test)):
 	mse += (val-y_test[i])**2
 
-print "current prediction rate %s" % (str(float(mse)/(i+1)),)
+print "current prediction rate %s" % (str(float(mse)/(i+1)),)"""
+
+
+import xgboost as xgb
+
+# Set our parameters for xgboost
+params = {}
+params['objective'] = 'binary:logistic'
+params['eval_metric'] = 'logloss'
+params['eta'] = 0.19
+params['max_depth'] = 16
+x_train = X
+x_valid = X
+y_train = y
+y_valid = y
+d_train = xgb.DMatrix(x_train, label=y_train)
+d_valid = xgb.DMatrix(x_valid, label=y_valid)
+
+watchlist = [(d_train, 'train'), (d_valid, 'valid')]
+
+bst = xgb.train(params, d_train, 600, watchlist, early_stopping_rounds=60, verbose_eval=100)
+
 
 test = pd.read_csv('test.csv')
 
@@ -44,6 +67,9 @@ counter = 0
 sub = open('sub.csv','wb')
 sub.write('test_id,is_duplicate\n')
 # prediction by item to avoid out of memory
+ids = []
+data_test = []
+frames = []
 for item in test.iterrows():
 	counter += 1
 	if True:
@@ -54,11 +80,26 @@ for item in test.iterrows():
 		question2 = str(tmp['question2']).lower()
 		question2 = unicode(question2, errors='replace')
 		tmp_dict = utils.vectorizer(question1,question2,tmp_dict)
+		data_test.append(tmp_dict)
+		ids.append(tmp['test_id'])
 		t_1	=	[]		
 		t_2 = []
 		x_test = [tmp_dict[h] for h in head]
-		pred = rfr.predict(x_test)[0]
-		sub.write("{test_id},{is_duplicate}\n".format(**{"test_id":tmp['test_id'],"is_duplicate":pred}))
+		#pred = rfr.predict(x_test)[0]
+		#sub.write("{test_id},{is_duplicate}\n".format(**{"test_id":tmp['test_id'],"is_duplicate":pred}))
 
 	if counter % 2000 == 0:
+		x_test = pd.DataFrame(data_test)
+		data_test = []
+
+		d_test = xgb.DMatrix(x_test)
+		p_test = bst.predict(d_test)
+		sub = pd.DataFrame()
+		sub['test_id'] = ids
+		ids = []
+		sub['is_duplicate'] = p_test
+		#sub.to_csv('simple_xgb_%d.csv'%(counter), index=False)
+		frames.append(sub)
 		print "iteration data %d" %(counter,)	
+result = pd.concat(frames)
+result.to_csv('xgb_features.csv',index=False)
