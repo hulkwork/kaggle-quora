@@ -3,7 +3,7 @@ from nltk import word_tokenize
 import pandas as pd
 import sys
 import utils
-
+import datetime 
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
@@ -43,17 +43,19 @@ params['objective'] = 'binary:logistic'
 params['eval_metric'] = 'logloss'
 params['eta'] = 0.19
 params['max_depth'] = 16
-x_train = X
-x_valid = X
-y_train = y
-y_valid = y
+size = len(train)
+n = 0.9
+x_train = X[:int(n*size)] 
+x_valid = X[int(n*size)+1:]
+y_train = y[:int(n*size)]
+y_valid = y[int(n*size)+1:]
+
 d_train = xgb.DMatrix(x_train, label=y_train)
 d_valid = xgb.DMatrix(x_valid, label=y_valid)
 
 watchlist = [(d_train, 'train'), (d_valid, 'valid')]
 
-bst = xgb.train(params, d_train, 600, watchlist, early_stopping_rounds=60, verbose_eval=100)
-
+bst = xgb.train(params, d_train, 10000, watchlist, early_stopping_rounds=200, verbose_eval=10)
 
 test = pd.read_csv('test.csv')
 
@@ -64,12 +66,16 @@ for key in train.columns:
 test_id = []
 prediction = []
 counter = 0
-sub = open('sub.csv','wb')
-sub.write('test_id,is_duplicate\n')
+#sub = open('sub.csv','wb')
+#sub.write('test_id,is_duplicate\n')
 # prediction by item to avoid out of memory
 ids = []
 data_test = []
 frames = []
+t_init = datetime.datetime.now()
+batch = 10000
+size_test = len(test)
+t_mean = t_init-t_init
 for item in test.iterrows():
 	counter += 1
 	if True:
@@ -88,7 +94,7 @@ for item in test.iterrows():
 		#pred = rfr.predict(x_test)[0]
 		#sub.write("{test_id},{is_duplicate}\n".format(**{"test_id":tmp['test_id'],"is_duplicate":pred}))
 
-	if counter % 2000 == 0:
+	if counter % batch == 0:
 		x_test = pd.DataFrame(data_test)
 		data_test = []
 
@@ -101,5 +107,14 @@ for item in test.iterrows():
 		#sub.to_csv('simple_xgb_%d.csv'%(counter), index=False)
 		frames.append(sub)
 		print "iteration data %d" %(counter,)	
+        t_mean += (datetime.datetime.now()-t_init )
+        tmp = {'time':str(datetime.datetime.now()-t_init),'batch':batch,'left':size_test - counter}
+        iteration = counter//batch +1
+        t_mean_tmp = t_mean / iteration
+        tmp['tpred'] = (tmp['left']//batch) * t_mean_tmp
+        tmp['tpred'] = str(tmp['tpred'])
+
+        print "second per {batch} record(s) {time} prediction for {left} left records : {tpred}" .format( **tmp)
+        t_init = datetime.datetime.now()
 result = pd.concat(frames)
 result.to_csv('xgb_features.csv',index=False)
