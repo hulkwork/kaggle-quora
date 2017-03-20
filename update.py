@@ -30,7 +30,7 @@ rfr.fit(X_train,y_train)
 mse = 0.0
 # Not the target metric (it's log-loss)
 for i,val in enumerate(rfr.predict(X_test)):
-	mse += (val-y_test[i])**2
+    mse += (val-y_test[i])**2
 
 print "current prediction rate %s" % (str(float(mse)/(i+1)),)"""
 
@@ -44,7 +44,7 @@ params['eval_metric'] = 'logloss'
 params['eta'] = 0.19
 params['max_depth'] = 16
 size = len(train)
-n = 0.9
+n = 0.2
 x_train = X[:int(n*size)] 
 x_valid = X[int(n*size)+1:]
 y_train = y[:int(n*size)]
@@ -55,17 +55,17 @@ d_valid = xgb.DMatrix(x_valid, label=y_valid)
 
 watchlist = [(d_train, 'train'), (d_valid, 'valid')]
 
-bst = xgb.train(params, d_train, 10000, watchlist, early_stopping_rounds=200, verbose_eval=10)
+bst = xgb.train(params, d_train, 1000, watchlist, early_stopping_rounds=150, verbose_eval=10)
 
 test = pd.read_csv('test.csv')
 
 head = []
 for key in train.columns:
-	if key !='target':
-		head.append(key)
+    if key !='target':
+        head.append(key)
 test_id = []
 prediction = []
-counter = 0
+counter = 1
 #sub = open('sub.csv','wb')
 #sub.write('test_id,is_duplicate\n')
 # prediction by item to avoid out of memory
@@ -73,40 +73,40 @@ ids = []
 data_test = []
 frames = []
 t_init = datetime.datetime.now()
-batch = 10000
+batch = 1000
 size_test = len(test)
 t_mean = t_init-t_init
 for item in test.iterrows():
-	counter += 1
-	if True:
-		tmp_dict = {}
-		tmp = item[1].to_dict()
-		question1 = str(tmp['question1']).lower()
-		question1 = unicode(question1, errors='replace')
-		question2 = str(tmp['question2']).lower()
-		question2 = unicode(question2, errors='replace')
-		tmp_dict = utils.vectorizer(question1,question2,tmp_dict)
-		data_test.append(tmp_dict)
-		ids.append(tmp['test_id'])
-		t_1	=	[]		
-		t_2 = []
-		x_test = [tmp_dict[h] for h in head]
-		#pred = rfr.predict(x_test)[0]
-		#sub.write("{test_id},{is_duplicate}\n".format(**{"test_id":tmp['test_id'],"is_duplicate":pred}))
+    counter += 1
+    if True:
+        tmp_dict = {}
+        tmp = item[1].to_dict()
+        question1 = str(tmp['question1']).lower()
+        question1 = unicode(question1, errors='replace')
+        question2 = str(tmp['question2']).lower()
+        question2 = unicode(question2, errors='replace')
+        tmp_dict = utils.vectorizer(question1,question2,tmp_dict)
+        data_test.append(tmp_dict)
+        ids.append(tmp['test_id'])
+        t_1 =   []      
+        t_2 = []
+        x_test = [tmp_dict[h] for h in head]
+        #pred = rfr.predict(x_test)[0]
+        #sub.write("{test_id},{is_duplicate}\n".format(**{"test_id":tmp['test_id'],"is_duplicate":pred}))
 
-	if counter % batch == 0:
-		x_test = pd.DataFrame(data_test)
-		data_test = []
+    if counter%batch == 0:
+        x_test = pd.DataFrame(data_test)
+        data_test = []
 
-		d_test = xgb.DMatrix(x_test)
-		p_test = bst.predict(d_test)
-		sub = pd.DataFrame()
-		sub['test_id'] = ids
-		ids = []
-		sub['is_duplicate'] = p_test
-		#sub.to_csv('simple_xgb_%d.csv'%(counter), index=False)
-		frames.append(sub)
-		print "iteration data %d" %(counter,)	
+        d_test = xgb.DMatrix(x_test)
+        p_test = bst.predict(d_test)
+        sub = pd.DataFrame()
+        sub['test_id'] = ids
+        ids = []
+        sub['is_duplicate'] = p_test
+        #sub.to_csv('simple_xgb_%d.csv'%(counter), index=False)
+        frames.append(sub)
+        print "iteration data %d size of data %d" %(counter,len(p_test),)   
         t_mean += (datetime.datetime.now()-t_init )
         tmp = {'time':str(datetime.datetime.now()-t_init),'batch':batch,'left':size_test - counter}
         iteration = counter//batch +1
