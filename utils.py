@@ -22,6 +22,33 @@ def vectorizer(q1,q2,tmp_dict={}):
 	tmp_dict['wup'] = list_sim(t_1,t_2,wup)
 	tmp_dict['exact_word_distance'] = exact_word_distance(t_1,t_2)
 	return tmp_dict
+def str_lower(sentence):
+	return str(sentence).lower()
+def transform(df):
+	df['question1'] = df['question1'].apply(str_lower)
+	df['question2'] = df['question2'].apply(str_lower)
+	
+	df['t_1'] = df['question1'].apply(tokenoze)
+	df['t_2'] = df['question2'].apply(tokenoze)
+	df["cosin"] = df.apply(lambda x : cosin(x['t_1'],x['t_2']))
+	df['scor_1-2'] = df.apply(lambda x : score(x['t_1'],x['t_2']) ) 	
+	df['scor_2-1'] = df.apply(lambda x : score(x['t_2'],x['t_1']) )	
+	df['exact_word']  = df.apply(lambda x : exact_word(x['t_1'],x['t_2']))
+	df['lev_dict']    = df.apply(lambda x : lev.levenshtein(x['t_1'],x['t_2']) ) 
+	total = len(t_1) + len(t_2) +1
+	df['len_q1_word'] = df['t_1'].apply(len)#(t_1)/float(total)
+	df['len_q2_word'] = df['t_2'].apply(len)#len(t_2)/float(total)
+	df['lch'] = df.apply(lambda x : list_sim(x['t_1'],x['t_2'],lch) ) 
+	df['pats'] = df.apply(lambda x : list_sim(x['t_1'],x['t_2'],pats))
+	df['wup'] = df.apply(lambda x : list_sim(x['t_1'],x['t_2'],wup) ) 
+	df['exact_word_distance'] = df.apply(lambda x : exact_word_distance(x['t_1'],x['t_2']) )
+	df['len_char_q1'] = df['question1'].apply(len)
+	df['len_char_q2'] = df['question2'].apply(len)
+
+	features = ['cosin','scor_1-2','scor_2-1','exact_word','lev_dict',"len_q1_word","len_q2_word","lch","pats","wup",'exact_word_distance','len_char_q1','len_char_q2']
+	
+	return df[features]
+
 def lch(w1,w2):
 	return wn.lch_similarity(wn.synsets(w1)[0], wn.synsets(w2)[0])
 def pats(w1,w2):
