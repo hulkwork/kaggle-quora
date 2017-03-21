@@ -110,6 +110,7 @@ for item in test.iterrows():
 
     if counter%batch == 0:
         x_test = pd.DataFrame(data_test)
+        x_test = x_test.fillna(0)
         data_test = []
 
         d_test = xgb.DMatrix(x_test)
@@ -131,6 +132,7 @@ for item in test.iterrows():
         print "second per {batch} record(s) {time} prediction for {left} left records : {tpred}" .format( **tmp)
         t_init = datetime.datetime.now()
 x_test = pd.DataFrame(data_test)
+x_test = x_test.fillna(0)
 data_test = []
 
 d_test = xgb.DMatrix(x_test)
