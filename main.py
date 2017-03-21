@@ -24,13 +24,13 @@ counts = Counter(words)
 weights = {}
 for word, count in counts.items():
     weights[word] = float(count) / count_words
-raw_input()
+
 # define new train data
 data_train = []
 
 t_init = datetime.datetime.now()
 
-batch = 1000
+batch = 10000
 size_train = len(train)
 t_mean = t_init - t_init
 for item in train.iterrows():
@@ -41,7 +41,7 @@ for item in train.iterrows():
         question1 = str(tmp['question1']).lower()
         question2 = str(tmp['question2']).lower()
         target = tmp['is_duplicate']
-        tmp_dict = utils.vectorizer(question1, question2, tmp_dict)
+        tmp_dict = utils.vectorizer(question1, question2, tmp_dict,weights)
         tmp_dict['target'] = target
         data_train.append(tmp_dict)
 

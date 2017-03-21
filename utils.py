@@ -22,7 +22,7 @@ except:
                      'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now'])
 
 
-def vectorizer(q1, q2, tmp_dict={}):
+def vectorizer(q1, q2, tmp_dict={},weights=None):
     t_1 = tokenoze(q1)
     t_2 = tokenoze(q2)
     tmp_dict["cosin"] = cosin(t_1, t_2)
@@ -38,6 +38,8 @@ def vectorizer(q1, q2, tmp_dict={}):
     tmp_dict['wup'] = list_sim(t_1, t_2, wup)
     tmp_dict['exact_word_distance'] = exact_word_distance(t_1, t_2)
     tmp_dict["match_kaggle"] = word_match_share(q1, q2)
+    if weights:
+        tmp_dict["tf_idf_match"] = tfidf_word_match_share(q1, q2, weights)
     return tmp_dict
 
 
@@ -66,7 +68,7 @@ def transform(df, weight=None):
     df['len_char_q1'] = df['question1'].apply(len)
     df['len_char_q2'] = df['question2'].apply(len)
     if weight:
-        df['tf_idf'] = df.apply(lambda x: tfidf_word_match_share(x['question1'], x['question,weight'], weight))
+        df['tf_idf_match'] = df.apply(lambda x: tfidf_word_match_share(x['question1'], x['question,weight'], weight))
     features = ['cosin', 'scor_1-2', 'scor_2-1', 'exact_word', 'lev_dict', "len_q1_word", "len_q2_word", "lch", "pats",
                 "wup", 'exact_word_distance', 'len_char_q1', 'len_char_q2']
 

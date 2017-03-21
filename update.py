@@ -7,6 +7,20 @@ import datetime
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+from collections import Counter
+# Load train
+train = pd.read_csv('train.csv', encoding='utf-8')
+train_qs = pd.Series(train['question1'].tolist() + train['question2'].tolist()).astype(str)
+
+words = (" ".join(train_qs)).lower().split()
+count_words = len(words)
+print "all words %d" % (count_words)
+counts = Counter(words)
+
+weights = {}
+for word, count in counts.items():
+    weights[word] = float(count) / count_words
+
 train = pd.read_csv("train_distance.csv")
 
 # Use random forest regressor
@@ -85,7 +99,7 @@ for item in test.iterrows():
         question1 = unicode(question1, errors='replace')
         question2 = str(tmp['question2']).lower()
         question2 = unicode(question2, errors='replace')
-        tmp_dict = utils.vectorizer(question1,question2,tmp_dict)
+        tmp_dict = utils.vectorizer(question1, question2, tmp_dict,weights)
         data_test.append(tmp_dict)
         ids.append(tmp['test_id'])
         t_1 =   []      
