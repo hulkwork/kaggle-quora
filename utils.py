@@ -48,7 +48,24 @@ def transform(df):
 	features = ['cosin','scor_1-2','scor_2-1','exact_word','lev_dict',"len_q1_word","len_q2_word","lch","pats","wup",'exact_word_distance','len_char_q1','len_char_q2']
 	
 	return df[features]
-
+def word_match_share(question1,question2):
+    """ from kaggle https://www.kaggle.com/anokas/quora-question-pairs/data-analysis-xgboost-starter-0-35460-lb
+    """
+    q1words = {}
+    q2words = {}
+    for word in str(question1).lower().split():
+        if word not in stops:
+            q1words[word] = 1
+    for word in str(question2).lower().split():
+        if word not in stops:
+            q2words[word] = 1
+    if len(q1words) == 0 or len(q2words) == 0:
+        # The computer-generated chaff includes a few questions that are nothing but stopwords
+        return 0
+    shared_words_in_q1 = [w for w in q1words.keys() if w in q2words]
+    shared_words_in_q2 = [w for w in q2words.keys() if w in q1words]
+    R = (len(shared_words_in_q1) + len(shared_words_in_q2))/(len(q1words) + len(q2words))
+    return R
 def lch(w1,w2):
 	return wn.lch_similarity(wn.synsets(w1)[0], wn.synsets(w2)[0])
 def pats(w1,w2):
