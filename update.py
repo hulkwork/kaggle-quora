@@ -130,5 +130,26 @@ for item in test.iterrows():
 
         print "second per {batch} record(s) {time} prediction for {left} left records : {tpred}" .format( **tmp)
         t_init = datetime.datetime.now()
+x_test = pd.DataFrame(data_test)
+data_test = []
+
+d_test = xgb.DMatrix(x_test)
+p_test = bst.predict(d_test)
+sub = pd.DataFrame()
+sub['test_id'] = ids
+ids = []
+sub['is_duplicate'] = p_test
+        #sub.to_csv('simple_xgb_%d.csv'%(counter), index=False)
+frames.append(sub)
+print "iteration data %d size of data %d" %(counter,len(p_test),)
+t_mean += (datetime.datetime.now()-t_init )
+tmp = {'time':str(datetime.datetime.now()-t_init),'batch':batch,'left':size_test - counter}
+iteration = counter//batch +1
+t_mean_tmp = t_mean / iteration
+tmp['tpred'] = (tmp['left']//batch) * t_mean_tmp
+tmp['tpred'] = str(tmp['tpred'])
+
+print "second per {batch} record(s) {time} prediction for {left} left records : {tpred}" .format( **tmp)
+t_init = datetime.datetime.now()
 result = pd.concat(frames)
 result.to_csv('xgb_features.csv',index=False)
