@@ -32,11 +32,14 @@ def vectorizer(q1, q2, tmp_dict={},weights=None):
     tmp_dict['lev_dict'] = lev.levenshtein(t_1, t_2)
     total = len(t_1) + len(t_2) + 1
     tmp_dict['len_q1'] = len(t_1) / float(total)
+    tmp_dict['len_q1_char'] = len(str(q1).lower())
+    tmp_dict['len_q2_char'] = len(str(q2).lower())
     tmp_dict['len_q2'] = len(t_2) / float(total)
-    tmp_dict['lch'] = list_sim(t_1, t_2, lch)
+
+    """tmp_dict['lch'] = list_sim(t_1, t_2, lch)
     tmp_dict['pats'] = list_sim(t_1, t_2, pats)
     tmp_dict['wup'] = list_sim(t_1, t_2, wup)
-    tmp_dict['exact_word_distance'] = exact_word_distance(t_1, t_2)
+    tmp_dict['exact_word_distance'] = exact_word_distance(t_1, t_2)"""
     tmp_dict["match_kaggle"] = word_match_share(q1, q2)
     if weights:
         tmp_dict["tf_idf_match"] = tfidf_word_match_share(q1, q2, weights)

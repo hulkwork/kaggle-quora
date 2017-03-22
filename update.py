@@ -55,7 +55,7 @@ import xgboost as xgb
 params = {}
 params['objective'] = 'binary:logistic'
 params['eval_metric'] = 'logloss'
-params['eta'] = 0.19
+params['eta'] = 0.02
 params['max_depth'] = 16
 size = len(train)
 n = 0.2
